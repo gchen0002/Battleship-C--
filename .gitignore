@@ -1,0 +1,8 @@
+# Compiled executable
+battleship.exe
+
+# Object files
+*.o
+
+# VS Code specific settings
+.vscode/ 
