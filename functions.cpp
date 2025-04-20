@@ -1,54 +1,27 @@
 #include "header.h"
-//Computer attack global variables
-vector<Point> lastHitCells;
-vector<Point> potentialTargets;
+#include <cctype> 
+#include <string>     // Added for std::string
+#include <sstream>    // Added for std::ostringstream
+#include "libs/nlohmann/json.hpp" // Added for JSON
+#include <cstdio>     // Added for printf
+
+// Computer attack global variables
+std::vector<Point> lastHitCells;
+std::vector<Point> potentialTargets;
 bool huntMode = true;
 
-// Display Boards Function
-// INPUT: playerBoard and enemyBoard
-// OUTPUT: Display of both boards
-// PROCESSING: Loops through each row and column of the boards and prints the corresponding characters
+// --- Global Game State ---
+PlayerBoard player1;       // Human player
+PlayerBoard player2;       // Computer player
+int currentPlayer = 1;   // 1 for Player 1 (Human), 2 for Player 2 (Computer)
+bool gameOver = false;     // Game status flag
+
+// Display Boards Function - REMOVED (Handled by JS Frontend)
+/*
 void displayBoards(char playerBoard[][10], char enemyBoard[][10]) {
-    // Board labeling and numbering
-    cout << endl;
-    cout << setw(28) << "Your Board" << setw(53) << "Enemy Board" << endl;
-    cout << "   ";
-    for (int i = 1; i <= 10; i++) {
-        cout << setw(4) << i;
-    }
-    cout << setw(13) << "";
-    for (int i = 1; i <= 10; i++) {
-        cout << setw(4) << i;
-    }
-    cout << endl;
-
-    cout << "  -----------------------------------------";
-    cout << setw(53) << " -----------------------------------------" << endl;
-    // Rows labeling 
-    char rowLabels[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
-
-    for (int row = 0; row < 10; row++) {
-        cout << rowLabels[row] << " ";
-        for (int col = 0; col < 10; col++) {
-            cout << " | " << playerBoard[row][col];
-        }
-        cout << " |";
-        cout << setw(11);
-        cout << rowLabels[row] << " ";
-        // Displaying enemy board
-        for (int col = 0; col < 10; col++) {
-            if (enemyBoard[row][col] == 'H' || enemyBoard[row][col] == 'M') {
-                cout << " | " << enemyBoard[row][col];
-            } else {
-                cout << " " << " | ";
-            }
-        }
-        cout << " |";
-        cout << endl;
-        cout << "  -----------------------------------------";
-        cout << setw(54) << "   -----------------------------------------" << endl;
-    }
+    // ... implementation removed ...
 }
+*/
 
 // Initialize Fleet Function
 // INPUT: player object
@@ -69,84 +42,64 @@ void initFleet(PlayerBoard& player) {
     }
 }
 
-// Board Setup Function
+// Board Setup Function - MODIFIED (Removed file input and display calls)
 // INPUT: player1 and player2 objects
-// OUTPUT: Display of both boards after ship placement
+// OUTPUT: Boards are set up internally
 // PROCESSING: Loops through each ship of each player and places them on the board
 void boardSetup(PlayerBoard& player1, PlayerBoard& player2) {
-    // Open input file for Player 1's ship placement
-    ifstream inputFile("input.txt");
-    if (!inputFile) {
-        cerr << "Unable to open input.txt\n";
-        return;
-    }
+    // REMOVED: Player 1 Ship Placement from input.txt
+    // This will need to be replaced by calls from JS using player-provided coordinates
 
-    cout << "Player 1 Ship Placement:\n";
-    for (int i = 0; i < FLEET_SIZE; i++) {
-        while (!placeShip(player1, i, inputFile)) {
-            cout << "Retrying ship placement for " << player1.fleet[i].name << ".\n";
-            // Reset file stream if reading failed
-            inputFile.clear();
-            inputFile.seekg(0);
-        }
-        displayBoards(player1.board, player2.board);
-    }
-    inputFile.close();
+    // TODO: Add logic here to place Player 1 ships based on JS input
+    // For now, we'll just initialize the computer
 
-    cout << "Computer Ship Placement:\n";
+    // REMOVED: cout << "Player 1 Ship Placement:\n";
+    // REMOVED: Loop calling placeShip(player1, i, inputFile) and displayBoards
+
+    // Computer Ship Placement
+    // REMOVED: cout << "Computer Ship Placement:\n";
     for (int i = 0; i < FLEET_SIZE; i++) {
         while (!computerPlaceShip(player2, i)) {
-            cout << "Retrying computer ship placement for " << player2.fleet[i].name << ".\n";
+            // REMOVED: cout << "Retrying computer ship placement ...";
+            // Consider adding a max retry count or error handling here
         }
-        displayBoards(player1.board, player2.board);
+        // REMOVED: displayBoards(player1.board, player2.board);
     }
 }
 
-// Overloaded placeShip function to accept input stream
-// INPUT: player object, ship index, and input stream
-// OUTPUT: True if ship is successfully placed, false otherwise
-// PROCESSING: Loops until a valid ship placement is found, then marks the ship on the board
+// Overloaded placeShip function to accept input stream - REMOVED
+/*
 bool placeShip(PlayerBoard& player, int shipIndex, istream& inputStream) {
-    int row, col;
-    char orientation;
-
-    while (!getValidShipInfo(row, col, orientation, player, shipIndex, inputStream)) {
-        cout << "Invalid ship placement. Try again.\n";
-        if (&inputStream != &cin) return false;
-    }
-
-    // Mark ship on board
-    Ship& ship = player.fleet[shipIndex];
-    ship.occupiedCells.clear();
-
-    for (int i = 0; i < ship.size; i++) {
-        if (orientation == 'H') {
-            player.board[row][col + i] = 's';
-            ship.occupiedCells.push_back(Point(row, col + i));
-        } else {
-            player.board[row + i][col] = 's';
-            ship.occupiedCells.push_back(Point(row + i, col));
-        }
-    }
-
-    return true;
+    // ... implementation removed ...
 }
-// Place Ship Function
+*/
+
+// Place Ship Function - Keep this version, will be adapted later
 // INPUT: player object and ship index
 // OUTPUT: True if ship is successfully placed, false otherwise
 // PROCESSING: Loops until a valid ship placement is found, then marks the ship on the board
+// REMOVED: Unused placeShip function definition
+/*
 bool placeShip(PlayerBoard& player, int shipIndex) {
     int row, col;
     char orientation;
 
-    while (!getValidShipInfo(row, col, orientation, player, shipIndex)) {
-        cout << "Invalid ship placement. Try again.\n";
-    }
+    // MODIFIED: Removed loop and validation call - This function will now assume valid input is passed
+    // The validation logic from getValidShipInfo will be reused or adapted elsewhere
+    // when creating the JS-callable placement function.
 
-    // Mark ship on board
+    // REMOVED: while (!getValidShipInfo(row, col, orientation, player, shipIndex)) {
+    // REMOVED:    cout << "Invalid ship placement. Try again.\n";
+    // REMOVED: }
+
+    // TODO: This function needs parameters for row, col, orientation passed from JS
+    // For now, its structure remains but it's not directly usable for player placement.
+
+
     Ship& ship = player.fleet[shipIndex];
     ship.occupiedCells.clear();
 
+    // This part remains, placing the ship based on (currently undefined) row, col, orientation
     for (int i = 0; i < ship.size; i++) {
         if (orientation == 'H') {
             player.board[row][col + i] = 's';
@@ -159,79 +112,25 @@ bool placeShip(PlayerBoard& player, int shipIndex) {
 
     return true;
 }
+*/
 
-// Get Valid Ship Info Function
-// INPUT: row, column, orientation, player object, ship index, and input stream
-// OUTPUT: True if ship info is valid, false otherwise
-// PROCESSING: Prompts the user for ship placement info and validates it
+// Get Valid Ship Info Function (istream version) - REMOVED
+/*
 bool getValidShipInfo(int& row, int& col, char& orientation, PlayerBoard& player, int shipIndex, istream& inputStream) {
-    string coordinates;
-    Ship& ship = player.fleet[shipIndex];
-
-    // Prompt for ship coordinates
-    cout << "Placing " << ship.name << " (Size: " << ship.size << ")\n";
-    
-    // Use the input stream to read coordinates
-    if (!(inputStream >> coordinates)) {
-        cout << "Error reading coordinates.\n";
-        return false;
-    }
-
-    // Convert coordinates to row and column
-    if (coordinates.length() < 2) {
-        cout << "Invalid coordinate format.\n";
-        return false;
-    }
-    row = coordinates[0] - 'A';
-    
-    try {
-        col = stoi(coordinates.substr(1)) - 1;
-    } catch (...) {
-        cout << "Invalid column number.\n";
-        return false;
-    }
-
-    // Validate row and column
-    if (row < 0 || row >= 10 || col < 0 || col >= 10) {
-        cout << "Coordinates out of bounds.\n";
-        return false;
-    }
-
-    // Read orientation
-    if (!(inputStream >> orientation)) {
-        cout << "Error reading orientation.\n";
-        return false;
-    }
-    orientation = toupper(orientation);
-
-    if (orientation != 'H' && orientation != 'V') {
-        cout << "Invalid orientation. Use H or V.\n";
-        return false;
-    }
-
-    // Check if ship fits on board
-    if (orientation == 'H' && col + ship.size > 10) {
-        cout << "Ship extends beyond board horizontally.\n";
-        return false;
-    }
-    if (orientation == 'V' && row + ship.size > 10) {
-        cout << "Ship extends beyond board vertically.\n";
-        return false;
-    }
-
-    // Check if space is occupied
-    if (spaceOccupied(player, row, col, orientation, ship.size)) {
-        cout << "Space is already occupied.\n";
-        return false;
-    }
-
-    return true;
+    // ... implementation removed ...
 }
+*/
 
-// Space Occupied Function
-// INPUT: player object, row, column, orientation, and ship size
-// OUTPUT: True if space is occupied, false otherwise
-// PROCESSING: Checks if the space on the board is already occupied
+// Get Valid Ship Info Function (console version) - REMOVED (Logic will be reused/adapted)
+/*
+bool getValidShipInfo(int& row, int& col, char& orientation, PlayerBoard& player, int shipIndex) {
+    // ... implementation removed ...
+    // Contains validation logic we need to reuse in a JS-callable function
+}
+*/
+
+
+// Space Occupied Function - REMAINS UNCHANGED
 bool spaceOccupied(const PlayerBoard& player, int row, int col, char orientation, int shipSize) {
     for (int i = 0; i < shipSize; i++) {
         if (orientation == 'H') {
@@ -247,7 +146,7 @@ bool spaceOccupied(const PlayerBoard& player, int row, int col, char orientation
     return false;
 }
 
-// Check if a ship is sunk
+// Check if a ship is sunk - REMAINS UNCHANGED
 // INPUT: ship object
 // OUTPUT: True if ship is sunk, false otherwise
 // PROCESSING: Checks if the ship's hit count is equal to its size
@@ -255,211 +154,229 @@ bool isShipSunk(const Ship& ship) {
     return ship.hitCount == ship.size;
 }
 
-// Play Game Function
-// INPUT: None
-// OUTPUT: Game result
-// PROCESSING: Initializes the players, sets up the board, and starts the game loop
+// Play Game Function - REMOVED (Handled by JS interaction)
+/*
 void playGame() {
-    PlayerBoard player1, player2;
-    initFleet(player1);
-    initFleet(player2);
-
-    boardSetup(player1, player2);
-
-    bool gameOver = false;
-    int currentPlayer = 1;
-
-    while (!gameOver) {
-        if (currentPlayer == 1) {
-            displayBoards(player1.board, player2.board);
-            playerAttack(player1, player2);
-            if (checkWinCondition(player2)) {
-                cout << "Player 1 wins!\n";
-                gameOver = true;
-            }
-            currentPlayer = 2;
-        } else {
-            displayBoards(player1.board, player2.board);
-            computerAttack(player1, player2);
-            if (checkWinCondition(player1)) {
-                cout << "Computer wins!\n";
-                gameOver = true;
-            }
-            currentPlayer = 1;
-        }
-    }
+    // ... implementation removed ...
 }
+*/
 
-// Player Attack Function
-// INPUT: Attacker and defender player objects
-// OUTPUT: Attack result
-// PROCESSING: Prompts the player for attack coordinates, validates them, and processes the attack
-void playerAttack(PlayerBoard& attacker, PlayerBoard& defender) {
-    while (true) {
-        try {
-            string coordinates;
-            cout << "Enter attack coordinates (e.g., A5): ";
-            cin >> coordinates;
 
-            // Validate coordinate length
-            if (coordinates.length() < 2) {
-                throw invalid_argument("Invalid coordinate format. Use a letter (A-J) followed by a number (1-10).");
-            }
+// Player Attack Function - MODIFIED
+// INPUT: row, col for attack (from JS)
+// OUTPUT: String indicating attack result: 
+//         "invalid_turn", "invalid_game_over", "invalid_bounds", 
+//         "invalid_already_attacked", "miss", "hit", "sunk <ship_name>", "win Player 1"
+// PROCESSING: Processes the player's attack on the computer's board (player2)
+std::string makePlayerAttack(int row, int col) {
+    // --- Initial Checks ---
+    if (gameOver) {
+        return "invalid_game_over";
+    }
+    if (currentPlayer != 1) {
+        return "invalid_turn";
+    }
+    // Validate coordinate bounds (essential as input comes from JS)
+    if (row < 0 || row >= 10 || col < 0 || col >= 10) {
+        return "invalid_bounds";
+    }
+    // Check if coordinates have already been attacked
+    if (player2.board[row][col] == 'H' || player2.board[row][col] == 'M') {
+        return "invalid_already_attacked";
+    }
 
-            // Convert row
-            char rowChar = toupper(coordinates[0]);
-            if (rowChar < 'A' || rowChar > 'J') {
-                throw invalid_argument("Invalid row. Use a letter between A and J.");
-            }
-            int row = rowChar - 'A';
+    // --- Process Attack --- 
+    std::string result = "miss"; // Default result
 
-            // Convert column
-            int col;
-            try {
-                col = stoi(coordinates.substr(1)) - 1;
-            } catch (...) {
-                throw invalid_argument("Invalid column. Use a number between 1 and 10.");
-            }
+    if (player2.board[row][col] == 's') { // It's a hit!
+        player2.board[row][col] = 'H';
+        result = "hit";
 
-            // Validate column
-            if (col < 0 || col >= 10) {
-                throw invalid_argument("Column out of bounds. Use a number between 1 and 10.");
-            }
-
-            // Check if coordinates have already been attacked
-            if (defender.board[row][col] == 'H' || defender.board[row][col] == 'M') {
-                throw invalid_argument("You have already attacked these coordinates. Choose a different location.");
-            }
-
-            // Proceed with attack
-            if (defender.board[row][col] == 's') {
-                cout << "Hit!\n";
-                defender.board[row][col] = 'H';
-
-                // Check which ship was hit
-                for (Ship& ship : defender.fleet) {
-                    for (Point& p : ship.occupiedCells) {
-                        if (p.row == row && p.col == col) {
-                            ship.hitCount++;
-                            
-                            // Check if ship is sunk
-                            if (isShipSunk(ship)) {
-                                cout << ship.name << " is sunk!\n";
-                            }
-                            break;
-                        }
+        // Check which ship was hit and if it sunk
+        for (Ship& ship : player2.fleet) {
+            for (Point& p : ship.occupiedCells) {
+                if (p.row == row && p.col == col) {
+                    ship.hitCount++;
+                    if (isShipSunk(ship)) {
+                        // Use ostringstream to build the sunk message
+                        std::ostringstream oss;
+                        oss << "sunk " << ship.name;
+                        result = oss.str(); 
                     }
+                    goto post_attack_check; // Skip further ship checks
                 }
-            } else if (defender.board[row][col] == ' ') {
-                cout << "Miss!\n";
-                defender.board[row][col] = 'M';
             }
+        }
+    } else if (player2.board[row][col] == ' ') { // It's a miss
+        player2.board[row][col] = 'M';
+        result = "miss";
+    } else {
+        // Should not happen if already_attacked check works, but as a fallback:
+        return "invalid_internal_state"; 
+    }
 
-            // Successfully completed attack, exit the loop
-            break;
+post_attack_check:;
 
-        } catch (const std::invalid_argument& e) {
-            // Catch and display specific error message
-            cout << "Error: " << e.what() << endl;
-            cout << "Please try again.\n";
-            
-            // Clear input stream to prevent infinite loop
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    // --- Post-Attack Updates ---
+
+    // Check for win condition ONLY if it was a hit/sunk
+    if (result.rfind("hit", 0) == 0 || result.rfind("sunk", 0) == 0) { // Check if result starts with "hit" or "sunk"
+        if (checkWinCondition(player2)) {
+            gameOver = true;
+            return "win Player 1"; // Game over, Player 1 wins
         }
     }
+
+    // Switch turn to computer
+    currentPlayer = 2;
+
+    return result; // Return "hit", "miss", or "sunk <ship_name>"
 }
 
-// Computer Attack Function
-// INPUT: player and computer player objects
-// OUTPUT: Attack result
-// PROCESSING: Implements smart targeting logic for the computer's attack
-void computerAttack(PlayerBoard& player, PlayerBoard& computer) {
+// Computer Attack Function - MODIFIED
+// INPUT: None (uses global state)
+// OUTPUT: String indicating attack result and coordinates:
+//         "invalid_turn", "invalid_game_over", 
+//         "miss <coord>", "hit <coord>", "sunk <ship_name> <coord>", "win Computer <coord>"
+// PROCESSING: Implements computer's attack logic on player1's board
+std::string makeComputerAttack() {
+    // --- Initial Checks ---
+    if (gameOver) {
+        return "invalid_game_over";
+    }
+    if (currentPlayer != 2) {
+        return "invalid_turn";
+    }
+
     int row, col;
     
-    // Smart targeting logic
+    // --- Choose Target Coordinates --- 
+    // Smart targeting logic (hunt/target mode)
     if (!huntMode && !potentialTargets.empty()) {
         // Target adjacent cells of previous hits
         Point target = potentialTargets.back();
         potentialTargets.pop_back();
-        
         row = target.row;
         col = target.col;
+        
+        // Basic validation for potential target (in case board state changed unexpectedly)
+        if (row < 0 || row >= 10 || col < 0 || col >= 10 || player1.board[row][col] == 'H' || player1.board[row][col] == 'M') {
+             // Invalid target, fall back to random or pick next potential
+             // For simplicity, just retry the whole attack sequence
+             return makeComputerAttack(); 
+        }
+
     } else {
         // Random targeting (hunt mode)
+        huntMode = true; // Ensure hunt mode if potential targets were empty
+        lastHitCells.clear();
+        int attempts = 0;
         do {
             row = rand() % 10;
             col = rand() % 10;
-        } while (player.board[row][col] == 'H' || player.board[row][col] == 'M');
+            attempts++;
+            if (attempts > 200) { // Prevent infinite loop on a full board (unlikely)
+                return "invalid_internal_state_cannot_find_target"; 
+            }
+        } while (player1.board[row][col] == 'H' || player1.board[row][col] == 'M');
     }
 
-    if (player.board[row][col] == 's') {
-        cout << "Computer hit at " << char(row + 'A') << col + 1 << "!\n";
-        player.board[row][col] = 'H';
+    // --- Process Attack --- 
+    std::string resultType = "miss"; // Default result type
+    std::string sunkShipName = "";
+
+    if (player1.board[row][col] == 's') { // It's a hit!
+        player1.board[row][col] = 'H';
+        resultType = "hit";
         
-        // Record the hit
+        // Record the hit for smart targeting
         lastHitCells.push_back(Point(row, col));
         huntMode = false;
 
         // Add potential adjacent targets
-        vector<Point> adjacentCells = {
-            Point(row-1, col), // Up
-            Point(row+1, col), // Down
-            Point(row, col-1), // Left
-            Point(row, col+1)  // Right
+        std::vector<Point> adjacentCells = {
+            Point(row-1, col), Point(row+1, col), Point(row, col-1), Point(row, col+1)
         };
-
         for (const Point& p : adjacentCells) {
-            // Check if adjacent cell is valid and not already attacked
             if (p.row >= 0 && p.row < 10 && p.col >= 0 && p.col < 10 &&
-                player.board[p.row][p.col] != 'H' && 
-                player.board[p.row][p.col] != 'M') {
-                potentialTargets.push_back(p);
+                player1.board[p.row][p.col] != 'H' && player1.board[p.row][p.col] != 'M') {
+                // Avoid adding duplicates
+                bool already_potential = false;
+                for(const auto& pt : potentialTargets) {
+                     if (pt.row == p.row && pt.col == p.col) { already_potential = true; break; }
+                }
+                if (!already_potential) potentialTargets.push_back(p);
             }
         }
-    } else if (player.board[row][col] == ' ') {
-        cout << "Computer missed at " << char(row + 'A') << col + 1 << "!\n";
-        player.board[row][col] = 'M';
 
-        // If we missed a potential target, remove it
-        auto it = find(potentialTargets.begin(), potentialTargets.end(), Point(row, col));
-        if (it != potentialTargets.end()) {
-            potentialTargets.erase(it);
+        // Check which ship was hit and if it sunk
+        for (Ship& ship : player1.fleet) {
+            for (Point& p : ship.occupiedCells) {
+                if (p.row == row && p.col == col) {
+                    ship.hitCount++;
+                    if (isShipSunk(ship)) {
+                        resultType = "sunk";
+                        sunkShipName = ship.name;
+                        // Reset targeting state after sinking a ship
+                        huntMode = true;
+                        potentialTargets.clear();
+                        lastHitCells.clear();
+                    }
+                    goto post_computer_attack_check; // Skip further ship checks
+                }
+            }
         }
 
-        // Check if we've exhausted all potential targets
-        if (potentialTargets.empty()) {
+    } else if (player1.board[row][col] == ' ') { // It's a miss
+        player1.board[row][col] = 'M';
+        resultType = "miss";
+
+        // If we missed a potential target, remove it (if it exists)
+        potentialTargets.erase(std::remove_if(potentialTargets.begin(), 
+                                              potentialTargets.end(), 
+                                              [row, col](const Point& p){ return p.row == row && p.col == col; }),
+                             potentialTargets.end());
+
+        // If no more potential targets, go back to hunt mode
+        if (potentialTargets.empty() && !huntMode) { 
             huntMode = true;
             lastHitCells.clear();
         }
     } else {
-        // If the cell was already hit or missed, try again
-        computerAttack(player, computer);
-        return;
+        // Should not happen if target selection logic works, but as a fallback:
+        return "invalid_internal_state_attacked_hit_cell";
     }
 
-    // Check which ship was hit
-    for (Ship& ship : player.fleet) {
-        for (Point& p : ship.occupiedCells) {
-            if (p.row == row && p.col == col) {
-                ship.hitCount++;
-                
-                // Check if ship is sunk
-                if (isShipSunk(ship)) {
-                    cout << ship.name << " is sunk!\n";
-                    
-                    // Reset targeting when a ship is sunk
-                    huntMode = true;
-                    potentialTargets.clear();
-                    lastHitCells.clear();
-                }
-                break;
-            }
+post_computer_attack_check:;
+
+    // --- Format Coordinate String --- 
+    std::ostringstream coord_oss;
+    coord_oss << char(row + 'A') << (col + 1);
+    std::string coordStr = coord_oss.str();
+
+    // --- Check for Win Condition --- 
+    if (resultType == "hit" || resultType == "sunk") {
+        if (checkWinCondition(player1)) {
+            gameOver = true;
+            return "win Computer " + coordStr; // Game over, Computer wins
         }
     }
+
+    // --- Build Final Result String --- 
+    std::ostringstream result_oss;
+    result_oss << resultType;
+    if (resultType == "sunk") {
+        result_oss << " " << sunkShipName;
+    }
+    result_oss << " " << coordStr;
+    
+    // --- Switch Turn --- 
+    currentPlayer = 1;
+
+    return result_oss.str();
 }
 
-// Check Win Condition Function
+// Check Win Condition Function - REMAINS UNCHANGED
 // INPUT: player object
 // OUTPUT: True if player has won, false otherwise
 // PROCESSING: Checks if all of the player's ships have been sunk
@@ -472,7 +389,7 @@ bool checkWinCondition(const PlayerBoard& player) {
     return true;
 }
 
-// Computer Place Ship Function
+// Computer Place Ship Function - MODIFIED (Removed output)
 // INPUT: computer object and ship index
 // OUTPUT: True if ship is successfully placed, false otherwise
 // PROCESSING: Randomly places the computer's ships on the board
@@ -504,11 +421,11 @@ bool computerPlaceShip(PlayerBoard& computer, int shipIndex) {
     } while (attempts < 100);
 
     if (attempts >= 100) {
-        cout << "Failed to place ship randomly\n";
-        return false;
+        // REMOVED: cout << "Failed to place ship randomly\n";
+        return false; // Indicate failure
     }
 
-    // Mark ship on board
+    // Mark ship on board (logic remains)
     Ship& ship = computer.fleet[shipIndex];
     ship.occupiedCells.clear();
 
@@ -523,4 +440,199 @@ bool computerPlaceShip(PlayerBoard& computer, int shipIndex) {
     }
 
     return true;
+}
+
+// Initializes the game state, clears boards, sets fleets, resets computer AI.
+void initializeGame() {
+    // Seed random number generator (should only be called once)
+    std::srand(std::time(nullptr));
+
+    // Initialize player boards and fleets
+    initFleet(player1);
+    initFleet(player2);
+
+    // Reset game status
+    currentPlayer = 1; // Player 1 starts
+    gameOver = false;
+
+    // Reset computer AI state
+    lastHitCells.clear();
+    potentialTargets.clear();
+    huntMode = true;
+
+    // Note: Ship placement is handled separately after initialization.
+    // The original boardSetup logic is split.
+}
+
+// Places all computer ships randomly on the board.
+// Called after player placement is complete.
+void placeComputerShips() {
+    for (int i = 0; i < FLEET_SIZE; i++) {
+        // computerPlaceShip includes logic to retry placement
+        if (!computerPlaceShip(player2, i)) {
+            // Optional: Handle the unlikely case where placement fails after many attempts
+            // e.g., log an error, or maybe even reset and retry all computer placements.
+            // For now, we'll just proceed, but the board might be invalid.
+            #ifdef DEBUG_MODE // Example conditional logging 
+            // std::cerr << "Warning: Failed to place computer ship: " << player2.fleet[i].name << std::endl; // Commented out std::cerr/endl
+            #endif
+        }
+    }
+}
+
+// --- Interface Functions ---
+
+// Attempts to place a single player ship based on input from JS.
+// Returns true if placement is valid and successful, false otherwise.
+bool placePlayerShip(int shipIndex, int row, int col, std::string orientationInput) {
+    printf("placePlayerShip called: ship=%d, row=%d, col=%d, orient='%s'\n", shipIndex, row, col, orientationInput.c_str());
+
+    // Validate shipIndex
+    if (shipIndex < 0 || shipIndex >= FLEET_SIZE) {
+        printf("placePlayerShip failed: Invalid shipIndex %d\n", shipIndex);
+        return false; 
+    }
+
+    // Extract and validate orientation from string
+    if (orientationInput.empty()) {
+        printf("placePlayerShip failed: Orientation string is empty\n");
+        return false;
+    }
+    char orientation = toupper(orientationInput[0]); // Get first char and convert to upper
+
+    Ship& ship = player1.fleet[shipIndex];
+    printf("  -> Processing ship '%s' (size %d), orientation %c\n", ship.name.c_str(), ship.size, orientation);
+
+    // --- Validation Logic (adapted from getValidShipInfo) --- 
+
+    // Validate row and column bounds
+    if (row < 0 || row >= 10 || col < 0 || col >= 10) {
+        printf("placePlayerShip failed: Coordinates (%d, %d) out of bounds\n", row, col);
+        return false;
+    }
+
+    // Validate orientation
+    if (orientation != 'H' && orientation != 'V') {
+        printf("placePlayerShip failed: Invalid orientation '%c'\n", orientation);
+        return false;
+    }
+
+    // Check if ship fits on board
+    if (orientation == 'H' && col + ship.size > 10) {
+        printf("placePlayerShip failed: Ship does not fit horizontally at col %d\n", col);
+        return false;
+    }
+    if (orientation == 'V' && row + ship.size > 10) {
+        printf("placePlayerShip failed: Ship does not fit vertically at row %d\n", row);
+        return false;
+    }
+
+    // Check if space is occupied
+    if (spaceOccupied(player1, row, col, orientation, ship.size)) {
+        printf("placePlayerShip failed: Space is occupied at (%d, %d) orient %c\n", row, col, orientation);
+        // Optional: Add more detailed logging inside spaceOccupied if needed
+        return false;
+    }
+
+    // --- Placement Logic (adapted from original placeShip) --- 
+    printf("placePlayerShip: All validation passed. Placing ship.\n");
+
+    // Clear previous placement if any
+    ship.occupiedCells.clear(); 
+    // Note: We might need to clear the board symbols ('s') if allowing re-placement during setup.
+    // For now, assume this is the first placement for this ship.
+
+    // Mark ship on board
+    for (int i = 0; i < ship.size; i++) {
+        if (orientation == 'H') {
+            player1.board[row][col + i] = 's';
+            ship.occupiedCells.push_back(Point(row, col + i));
+        } else {
+            player1.board[row + i][col] = 's';
+            ship.occupiedCells.push_back(Point(row + i, col));
+        }
+    }
+    printf("placePlayerShip successful.\n");
+    return true; // Placement successful
+}
+
+// Returns the current state of both boards as a JSON string.
+// Hides un-hit computer ships. Uses manual string building.
+std::string getBoardState() {
+    std::ostringstream oss;
+    oss << "{";
+
+    // Player 1 board
+    oss << "\"player1\":[";
+    for (int r = 0; r < 10; ++r) {
+        oss << "[";
+        for (int c = 0; c < 10; ++c) {
+            // Represent char as a JSON string
+            oss << "\"" << player1.board[r][c] << "\""; 
+            if (c < 9) oss << ",";
+        }
+        oss << "]";
+        if (r < 9) oss << ",";
+    }
+    oss << "],"; // End of player1 array
+
+    // Player 2 board (masked)
+    oss << "\"player2_masked\":[";
+    for (int r = 0; r < 10; ++r) {
+        oss << "[";
+        for (int c = 0; c < 10; ++c) {
+            char cell = player2.board[r][c];
+            if (cell == 'H' || cell == 'M') {
+                oss << "\"" << cell << "\""; // Show Hit or Miss
+            } else {
+                oss << "null"; // Use JSON null for hidden/empty
+            }
+            if (c < 9) oss << ",";
+        }
+        oss << "]";
+        if (r < 9) oss << ",";
+    }
+    oss << "]"; // End of player2_masked array
+
+    oss << "}"; // End of JSON object
+    return oss.str();
+}
+
+// Returns the current game status as a JSON string.
+std::string getGameStatus() {
+    nlohmann::json status;
+    status["currentPlayer"] = currentPlayer; // 1 for Player, 2 for Computer
+    status["gameOver"] = gameOver;
+    
+    if (gameOver) {
+        // Determine winner by checking who's turn it WOULD be if game continued
+        // (or more robustly, check who has ships left)
+        if (checkWinCondition(player2)) {
+            status["winner"] = 1; // Player 1 won
+        } else if (checkWinCondition(player1)) {
+            status["winner"] = 2; // Player 2 won
+        } else {
+             status["winner"] = 0; // Should not happen in a normal win scenario
+        }
+    } else {
+        status["winner"] = 0; // Game not over, no winner yet
+    }
+
+    return status.dump();
+}
+
+#include <emscripten/bind.h> // Moved here, just before bindings
+EMSCRIPTEN_BINDINGS(my_module) {
+    emscripten::function("initializeGame", emscripten::select_overload<void()>(&initializeGame)); 
+    emscripten::function("placePlayerShip", emscripten::select_overload<bool(int, int, int, std::string)>(&placePlayerShip));
+    // function("finalizePlayerPlacement", &finalizePlayerPlacement); // Still needs implementation
+    emscripten::function("placeComputerShips", emscripten::select_overload<void()>(&placeComputerShips)); // Bind this too
+    emscripten::function("makePlayerAttack", emscripten::select_overload<std::string(int, int)>(&makePlayerAttack)); 
+    emscripten::function("makeComputerAttack", emscripten::select_overload<std::string()>(&makeComputerAttack)); 
+    emscripten::function("getBoardState", emscripten::select_overload<std::string()>(&getBoardState)); 
+    emscripten::function("getGameStatus", emscripten::select_overload<std::string()>(&getGameStatus)); 
+    
+    emscripten::value_object<Point>("Point")
+        .field("row", &Point::row)
+        .field("col", &Point::col);
 }

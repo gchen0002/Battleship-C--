@@ -1,7 +1,6 @@
 #ifndef BATTLESHIP_H
 #define BATTLESHIP_H
 
-#include <iostream>
 #include <iomanip>
 #include <vector>
 #include <string>
@@ -11,7 +10,6 @@
 #include <ctime>
 #include <fstream>
 #include <limits> //for error handling
-using namespace std;
 
 // Global Constants
 const int CARRIER_SIZE = 5;
@@ -35,13 +33,13 @@ struct Point {
 
 // Ship Struct
 struct Ship {
-    string name;
+    std::string name;
     int size;
     int hitCount;
-    vector<Point> occupiedCells;
+    std::vector<Point> occupiedCells;
     
     Ship() : name(""), size(0), hitCount(0) {}
-    Ship(string n, int s) : name(n), size(s), hitCount(0) {}
+    Ship(std::string n, int s) : name(n), size(s), hitCount(0) {}
 };
 
 // PlayerBoard Struct
@@ -54,10 +52,18 @@ struct PlayerBoard {
 void displayBoards(char [][10], char [][10]);
 void initFleet(PlayerBoard&);
 void boardSetup(PlayerBoard&, PlayerBoard&);
-bool placeShip(PlayerBoard&, int, istream& = cin);
-bool getValidShipInfo(int&, int&, char&, PlayerBoard&, int, istream& = cin);
+
+// REMOVED: Obsolete declarations using std::cin
+// bool placeShip(PlayerBoard&, int, std::istream& = std::cin);
+// bool getValidShipInfo(int&, int&, char&, PlayerBoard&, int, std::istream& = std::cin);
+
+// Add back missing declarations
 bool spaceOccupied(const PlayerBoard&, int, int, char, int);
 bool computerPlaceShip(PlayerBoard&, int);
+
+// Updated prototype for placePlayerShip
+bool placePlayerShip(int shipIndex, int row, int col, std::string orientationInput);
+
 void playGame();
 void playerAttack(PlayerBoard&, PlayerBoard&);
 void computerAttack(PlayerBoard&, PlayerBoard&);
