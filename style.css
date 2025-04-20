@@ -1,0 +1,102 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    color: #333;
+}
+
+.game-area {
+    display: flex;
+    justify-content: space-around; /* Distribute space between boards and log */
+    align-items: flex-start; /* Align tops */
+    width: 100%;
+    max-width: 1000px; /* Adjust as needed */
+    margin-top: 20px;
+}
+
+.board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(10, 30px); /* Adjust cell size */
+    grid-template-rows: repeat(10, 30px);    /* Adjust cell size */
+    border: 1px solid #666;
+    margin-top: 10px;
+}
+
+.cell {
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    background-color: #fff; /* Default empty cell */
+}
+
+/* Board cell states */
+.cell.ship { background-color: #aaa; } /* Player's own ship */
+.cell.hit { background-color: #ff6666; color: #fff;} /* Hit */
+.cell.miss { background-color: #87ceeb; } /* Miss */
+
+.message-log-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px; /* Adjust width */
+    margin: 0 20px; /* Space between boards and log */
+}
+
+#message-log {
+    width: 100%;
+    height: 324px; /* Match board height (10 * 30px cell + 2 * 1px border + 10px margin?) approx */
+    border: 1px solid #666;
+    background-color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    overflow-y: scroll; /* Enable vertical scrolling */
+    font-size: 0.9em;
+    line-height: 1.4;
+    box-sizing: border-box; /* Include padding/border in height */
+}
+
+#message-log p {
+    margin: 0 0 5px 0; /* Spacing between messages */
+    padding: 0;
+}
+
+
+/* Controls styling (basic) */
+#placement-controls, #game-info {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#game-status {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#message { /* Keep the single-line message area for now, maybe repurpose */
+    color: blue;
+    min-height: 1.2em; /* Prevent layout shift */
+    font-style: italic;
+}
+
+button {
+    padding: 8px 15px;
+    margin: 5px;
+    cursor: pointer;
+} 

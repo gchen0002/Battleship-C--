@@ -9,7 +9,8 @@ createBattleshipModule().then(Module => {
     const playerBoardDiv = document.getElementById('player-board');
     const computerBoardDiv = document.getElementById('computer-board');
     const gameStatusP = document.getElementById('game-status');
-    const messageP = document.getElementById('message');
+    const messageP = document.getElementById('message'); // For short-lived messages
+    const messageLogDiv = document.getElementById('message-log'); // New log element
     const newGameBtn = document.getElementById('new-game-btn');
     const placementControlsDiv = document.getElementById('placement-controls');
     const shipSelect = document.getElementById('ship-select');
@@ -31,6 +32,18 @@ createBattleshipModule().then(Module => {
     initializeUI();
     setupEventListeners();
     updateStatus("WASM Module Loaded. Click 'New Game' to start.");
+
+    // --- Logging Function ---
+    function logMessage(text) {
+        if (!messageLogDiv) return;
+        const p = document.createElement('p');
+        p.textContent = text;
+        messageLogDiv.appendChild(p);
+        // Auto-scroll to bottom
+        messageLogDiv.scrollTop = messageLogDiv.scrollHeight;
+        // Also briefly show in single message area for immediate feedback
+        // messageP.textContent = text;
+    }
 
     // --- Core Functions ---
 
@@ -81,6 +94,9 @@ createBattleshipModule().then(Module => {
 
     function startGame() {
         console.log("Starting new game...");
+        // Clear previous log
+        if (messageLogDiv) messageLogDiv.innerHTML = ''; 
+        logMessage("Starting new game..."); // Log it
         updateStatus("Initializing game...");
         // Call C++ initializeGame directly
         BattleshipModule.initializeGame();
@@ -91,7 +107,7 @@ createBattleshipModule().then(Module => {
         placementControlsDiv.style.display = 'block'; // Show placement controls
         finalizePlacementBtn.disabled = true; // Disabled until all ships are placed
         updateStatus("Place your ships. Select ship and click on your board.");
-        messageP.textContent = '';
+        messageP.textContent = ''; // Clear temporary message area
         addPlacementListeners(); // Enable clicks on player board for placement
         clearBoardHighlights(); // Clear highlights from previous game
         refreshBoardState(); // Get initial empty board state
@@ -137,11 +153,11 @@ createBattleshipModule().then(Module => {
         const orientation = orientationSelect.value; // 'H' or 'V'
 
         if (isNaN(shipIndex)) {
-            messageP.textContent = "Please select a ship type.";
+            messageP.textContent = "Please select a ship type."; // Keep this short-lived
             return;
         }
          if (playerShipsPlaced[shipIndex]) {
-             messageP.textContent = "You have already placed the " + shipData[shipIndex].name;
+             messageP.textContent = "You have already placed the " + shipData[shipIndex].name; // Keep this short-lived
              return;
         }
 
@@ -151,13 +167,15 @@ createBattleshipModule().then(Module => {
         const success = BattleshipModule.placePlayerShip(shipIndex, row, col, orientation);
 
         if (success) {
-            messageP.textContent = `${shipData[shipIndex].name} placed successfully.`;
+            // messageP.textContent = `${shipData[shipIndex].name} placed successfully.`;
+            logMessage(`${shipData[shipIndex].name} placed successfully.`); // Log it
             playerShipsPlaced[shipIndex] = true;
             populateShipSelect(); // Update dropdown to disable placed ship
             refreshBoardState(); // Update the visual board
              // Check if all ships are placed
              if (playerShipsPlaced.every(placed => placed)) {
-                 messageP.textContent = "All ships placed. Click 'Finalize Placement'.";
+                 // messageP.textContent = "All ships placed. Click 'Finalize Placement'.";
+                 logMessage("All ships placed. Click 'Finalize Placement'."); // Log it
                  finalizePlacementBtn.disabled = false; // Enable finalize button
              } else {
                  // Find the next available ship to select
@@ -167,7 +185,7 @@ createBattleshipModule().then(Module => {
                  }
              }
         } else {
-            messageP.textContent = `Invalid placement for ${shipData[shipIndex].name}. Try again.`;
+            messageP.textContent = `Invalid placement for ${shipData[shipIndex].name}. Try again.`; // Keep this short-lived
         }
     }
 
@@ -179,7 +197,9 @@ createBattleshipModule().then(Module => {
 
          console.log("Finalizing placement... Placing computer ships.");
          // Call C++ to place computer ships directly
+         logMessage("Player placement complete. Placing computer ships..."); // Log it
          BattleshipModule.placeComputerShips();
+         logMessage("Computer ships placed."); // Log it
 
          gameState = 'player_turn';
          placementControlsDiv.style.display = 'none';
@@ -208,6 +228,7 @@ createBattleshipModule().then(Module => {
 
         console.log(`Player attacks (${row}, ${col})`);
         updateStatus("Processing your attack...");
+        logMessage(`Player attacks (${row + 1}, ${String.fromCharCode(65 + col)})...`); // Log attack coordinates
 
         // Call C++ makePlayerAttack directly
         const result = BattleshipModule.makePlayerAttack(row, col);
@@ -227,6 +248,7 @@ createBattleshipModule().then(Module => {
 
         console.log("Computer's turn...");
         updateStatus("Computer is thinking...");
+        logMessage("Computer's turn..."); // Log it
 
         // Call C++ makeComputerAttack directly
         const result = BattleshipModule.makeComputerAttack();
@@ -306,21 +328,37 @@ createBattleshipModule().then(Module => {
                  message = "You already attacked that location.";
                  break; // Don't switch turn
              case 'invalid_bounds':
+                 // Log invalid player moves, but maybe not show in primary message?
+                 if (attacker === 'Player 1') {
+                     logMessage("Invalid coordinates selected.");
+                 } else {
+                     // Should not happen for computer, indicates C++ error
+                     logMessage(`Error: Computer attacked invalid bounds: ${result}`);
+                 }
                  message = "Invalid coordinates.";
                  break; // Don't switch turn
              case 'invalid_turn':
+                 logMessage("Error: Attack attempted during wrong turn."); // Log error
                  message = "It's not your turn!"; // Should ideally not happen with UI controls
                  break; // Don't switch turn
              case 'invalid_game_over':
-                 message = "The game is already over.";
-                  break; // Don't switch turn
+                 logMessage("Error: Attack attempted after game over."); // Log error
+                  message = "The game is already over.";
+                   break; // Don't switch turn
             default:
                 message = `Unknown result: ${result}`;
                  console.warn("Received unknown result from C++:", result);
                 break;
         }
 
-        messageP.textContent = message;
+        // Log the primary outcome message
+        logMessage(message); 
+        // Clear the temporary message area if it wasn't an error kept there
+        if (type !== 'invalid_already_attacked' && type !== 'invalid_bounds') {
+             messageP.textContent = ''; 
+        } else {
+            messageP.textContent = message; // Keep invalid move message visible briefly
+        }
 
         // Check game status from C++ if the game *might* be over
         if (type === 'hit' || type === 'sunk' || type === 'win') {
@@ -331,7 +369,8 @@ createBattleshipModule().then(Module => {
                 gameOver = true;
                 if (!winner) winner = status.winner; // If win wasn't direct result string
                 if (winner && !message.includes("Game Over")) { // Update message if win detected via status
-                     messageP.textContent = `Game Over! ${winner === 1 ? 'Player 1' : 'Computer'} wins!`;
+                     const winnerText = `Game Over! ${winner === 1 ? 'Player 1' : 'Computer'} wins!`;
+                     logMessage(winnerText); // Log it
                 }
              }
         }
